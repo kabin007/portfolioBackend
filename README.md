@@ -3,7 +3,7 @@ Authentication API Documentation
 
 GETTING STARTED:
     
-    1. Clone the repo  $ git clone https://github.com/kabin007/authyy'
+    1. Clone the repo  $ git clone https://github.com/kabin007/authyy.git'
 
     2. Install libraries $ pip install -r requirements.txt
 
