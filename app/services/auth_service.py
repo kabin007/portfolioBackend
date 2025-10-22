@@ -1,4 +1,3 @@
-from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status, Depends
 from app.models.user import User, RefreshToken
 from app.schemas.user_schema import UserCreate, UserLogin
@@ -26,14 +25,14 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
 class AuthService:
-    def __init__(self, db: AsyncSession):
+    def __init__(self, db=Depends(get_db)):
         self.db = db
 
-    async def register_user(self, user_data: UserCreate) -> dict:
+    def register_user(self, user_data: UserCreate) -> dict:
         """Register a new user and return token response"""
 
        # Check if username already exists
-        result = await self.db.execute(select(User).where(User.username == user_data.username))
+        result = self.db.execute(select(User).where(User.username == user_data.username))
         if result.scalar_one_or_none():
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -41,7 +40,7 @@ class AuthService:
             )
 
         # Check if email already exists
-        result = await self.db.execute(select(User).where(User.email == user_data.email))
+        result = self.db.execute(select(User).where(User.email == user_data.email))
         if result.scalar_one_or_none():
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -72,8 +71,8 @@ class AuthService:
         )
 
         self.db.add(db_user)
-        await self.db.commit()
-        await self.db.refresh(db_user)
+        self.db.commit()
+        self.db.refresh(db_user)
 
         # Create access token
         access_token = self._create_user_token(db_user)
@@ -86,11 +85,11 @@ class AuthService:
         }
 
     
-    async def authenticate_user(self, user_data: UserLogin) -> dict:
+    def authenticate_user(self, user_data: UserLogin) -> dict:
         """Authenticate user and return token response"""
         
         # Find user by username
-        result= await self.db.execute(select(User).where(User.username==user_data.username))
+        result= self.db.execute(select(User).where(User.username==user_data.username))
         user=result.scalar_one_or_none()
 
         if not user or not verify_password(user_data.password, user.hashed_password):
@@ -114,8 +113,8 @@ class AuthService:
         )
 
         self.db.add(refresh)
-        await self.db.commit()
-        # await self.db.refresh(refresh)
+        self.db.commit()
+        # self.db.refresh(refresh)
 
         return {
             "tokens": {
@@ -157,7 +156,7 @@ class AuthService:
         return refresh_token, jti, expiry
 
     
-    async def _get_tokens(self, refresh_token: str) -> dict:
+    def _get_tokens(self, refresh_token: str) -> dict:
         try:
             payload = jwt.decode(refresh_token, settings.secret_key, algorithms=[settings.algorithm])
             user_id = int(payload.get("sub"))
@@ -171,7 +170,7 @@ class AuthService:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Refresh token expired")
 
         #query and check the refresh token in the database if it is available
-        result = await self.db.execute(select(RefreshToken).where(RefreshToken.jti == jti))
+        result = self.db.execute(select(RefreshToken).where(RefreshToken.jti == jti))
         stored_token = result.scalar_one_or_none()
 
         if not stored_token or stored_token.revoked:
@@ -179,10 +178,10 @@ class AuthService:
 
         # Revoke old token
         stored_token.revoked = True
-        await self.db.commit()
+        self.db.commit()
 
         #query the database with the user_id
-        result= await self.db.execute(select(User).where(User.id==user_id))
+        result= self.db.execute(select(User).where(User.id==user_id))
         user = result.scalar_one_or_none()
 
         user_dict={
@@ -211,11 +210,11 @@ class AuthService:
         }
 
 
-    async def _forgot_password(self, email: str):
+    def _forgot_password(self, email: str):
 
         try:
             user_service = UserService(db=self.db)
-            user = await user_service.get_user_by_email(email)  
+            user = user_service.get_user_by_email(email)  
 
             if not user:
                 return {"message": "If that email exists, a reset link has been sent."}
@@ -223,12 +222,12 @@ class AuthService:
             token = generate_secure_token()
 
 
-            await store_reset_token(db=self.db, user_id=user.id, token=token, expires_in=3600)
+            store_reset_token(db=self.db, user_id=user.id, token=token, expires_in=3600)
 
             reset_link = f"https://frontend.com/reset-password?token={token}"
              
             #send email to the user
-            await send_email(
+            send_email(
                 to=email,
                 subject="Your Password Reset Link",
                 body=f"Click here to reset your password: {reset_link}\nLink expires in 1 hour."
@@ -249,9 +248,9 @@ class AuthService:
             ) from e
 
 
-    async def _reset_password(self, token: str, new_password: str):
+    def _reset_password(self, token: str, new_password: str):
         try:
-            token_record = await get_token_record(self.db, token)
+            token_record = get_token_record(self.db, token)
             if not token_record:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
@@ -265,7 +264,7 @@ class AuthService:
                 )
             
             user_service=UserService(db=self.db)
-            user = await user_service.get_user_by_id(token_record.user_id)
+            user = user_service.get_user_by_id(token_record.user_id)
             if not user:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
@@ -276,7 +275,7 @@ class AuthService:
             hashed_password = get_password_hash(new_password)
             
             #update the user's password
-            await user_service.update_user_password(user.id, hashed_password) 
+            user_service.update_user_password(user.id, hashed_password) 
             
             return {"message": "Password successfully reset."}
 

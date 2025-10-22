@@ -15,22 +15,22 @@ from jose import JWTError, jwt
 router=APIRouter(prefix='/auth', tags=["authentication"])
 
 
-@router.post("/users")
-async def signup(user_data: UserCreate, db: AsyncSession = Depends(get_db)):
+@router.post("/signup")
+def signup(user_data: UserCreate, db= Depends(get_db)):
     """Register a new user"""
     auth_service = AuthService(db=db)
-    return await auth_service.register_user(user_data)
+    return auth_service.register_user(user_data)
 
 
 @router.post("/login")
-async def login(user_data: UserLogin, db: AsyncSession = Depends(get_db)):
+def login(user_data: UserLogin, db= Depends(get_db)):
     """Login user and return JWT token"""
     auth_service = AuthService(db=db)
-    return await auth_service.authenticate_user(user_data)
+    return auth_service.authenticate_user(user_data)
 
 
 @router.get("/me", response_model=UserResponse)
-async def get_current_user_info(current_user: UserResponse = Depends(get_current_user)):
+def get_current_user_info(current_user: UserResponse = Depends(get_current_user)):
     """Get current user information"""
     return UserResponse(
         id=current_user.id,
@@ -40,14 +40,14 @@ async def get_current_user_info(current_user: UserResponse = Depends(get_current
     )
 
 @router.get("/users", response_model=list[UserResponse])
-async def get_all_users(db: AsyncSession = Depends(get_db)):
+def get_all_users(db= Depends(get_db), user=Depends(get_current_user)):
     """Get all users"""
     user_service = UserService(db=db)
-    return await user_service.get_all_users()
+    return user_service.get_all_users()
 
 
 @router.post("/tokens")
-async def get_tokens(request:Request, db:AsyncSession=Depends(get_db)):
+def get_tokens(request:Request, db:AsyncSession=Depends(get_db)):
     """
     Get refresh token and access tokens for user
     """
@@ -57,17 +57,17 @@ async def get_tokens(request:Request, db:AsyncSession=Depends(get_db)):
     token = auth_header.split(" ")[1]
 
     auth_service = AuthService(db=db)
-    tokens = await auth_service._get_tokens(token)
+    tokens = auth_service._get_tokens(token)
     return tokens
 
 
 @router.post('/forgot-password')
-async def forget_password(request: ForgotPasswordRequest , db:AsyncSession= Depends(get_db)):
+def forget_password(request: ForgotPasswordRequest , db:AsyncSession= Depends(get_db)):
     auth_service=AuthService(db=db)
-    return await auth_service._forgot_password(request.email)    
+    return auth_service._forgot_password(request.email)    
 
 
 @router.post('/reset-password')
-async def reset_password(request: ResetPasswordRequest, db:AsyncSession= Depends(get_db)):
+def reset_password(request: ResetPasswordRequest, db:AsyncSession= Depends(get_db)):
     auth_service=AuthService(db=db)
-    return await auth_service._reset_password(request.token, request.password)
+    return auth_service._reset_password(request.token, request.password)

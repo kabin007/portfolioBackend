@@ -1,12 +1,12 @@
 from typing import List, Optional
 from sqlmodel import SQLModel, Field, Relationship
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 
 
 class RefreshToken(SQLModel, table=True):
     id:Optional[int]=Field(default=None, primary_key=True)
-    created_at:datetime=Field(default_factory=datetime.utcnow)
+    created_at:datetime=Field(default_factory=lambda: datetime.now(timezone.utc))
     jti:str=Field(nullable=False, unique=True)
     expires_at:datetime=Field(nullable=False)
     revoked:bool=Field(default=False)
@@ -34,7 +34,7 @@ class User(SQLModel, table=True):
     username:str=Field(index=True, nullable=False, unique=True)
     email:str=Field(index=True, nullable=False, unique=True)
     hashed_password:str=Field(nullable=False)
-    created_at:datetime=Field(default_factory=datetime.utcnow)
+    created_at:datetime=Field(default_factory=lambda: datetime.now(timezone.utc))
 
     #refresh tokens
     refresh_tokens:List["RefreshToken"]=Relationship(

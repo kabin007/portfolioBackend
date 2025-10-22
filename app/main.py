@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 import logging
 from app.database.db import create_tables, get_db
-from app.routes import auth_routes
+from app.routes import auth_router, blog_router, visitor_router, contact_router
 from app.models import user
 import uvicorn
 
@@ -28,14 +28,17 @@ app.add_middleware(
 )
 
 # Include routers
-app.include_router(auth_routes.router)
+app.include_router(auth_router)
+app.include_router(visitor_router)
+app.include_router(blog_router)
+app.include_router(contact_router)
 
 
 @app.on_event("startup")
 async def startup_event():
     """Create database tables on startup"""
     logger.info("Creating database tables...")
-    await create_tables()
+    create_tables()
     logger.info("Database tables created successfully")
 
 

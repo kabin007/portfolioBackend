@@ -11,7 +11,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "a
 # Import your models and database configuration
 from sqlmodel import SQLModel
 # Import all your models here so Alembic can detect them
-from  app.models.user import User, RefreshToken
+from app.models import BlogPost, Category, Contact, Visitor,User, RefreshToken, ResetToken
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -26,8 +26,7 @@ if config.config_file_name is not None:
 DATABASE_URL = settings.database_url
 
 # Convert async URL to sync URL for Alembic
-SYNC_DATABASE_URL = DATABASE_URL.replace("sqlite+aiosqlite://", "sqlite://")
-config.set_main_option("sqlalchemy.url", SYNC_DATABASE_URL)
+config.set_main_option("sqlalchemy.url", DATABASE_URL)
 
 # add your model's MetaData object here for 'autogenerate' support
 target_metadata = SQLModel.metadata
