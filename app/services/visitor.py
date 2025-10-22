@@ -28,6 +28,7 @@ class VisitorService:
 
         try:
             res = requests.get(f"https://ipapi.co/{ip}/json/", timeout=5).json()
+            print(res)
             data.update({
                 "country": res.get("country_name"),
                 "city": res.get("city"),
