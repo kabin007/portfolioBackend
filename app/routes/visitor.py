@@ -19,8 +19,15 @@ def get_all_visitors(session: Session = Depends(get_db)):
 
 @router.post("/track", response_model=VisitorRead)
 def track_visitor(request: Request, session: Session = Depends(get_db)):
+    forwarded = request.headers.get("X-Forwarded-For")
+    if forwarded:
+        ip_address = forwarded.split(",")[0].strip()
+
+    else:
+        ip_address = request.client.host
+
     visitor_create = VisitorCreate(
-        ip_address=request.client.host,
+        ip_address=ip_address,
         user_agent=request.headers.get("user-agent", "")
     )
     visitor = VisitorService.create_or_update_visitor(session, visitor_create)
