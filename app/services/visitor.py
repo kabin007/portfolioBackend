@@ -27,15 +27,14 @@ class VisitorService:
         }
 
         try:
-            res = requests.get(f"https://ipapi.co/{ip}/json/", timeout=5).json()
-            print(res)
+            res = requests.get(f"http://ip-api.com/json/{ip}?fields=status,message,lat,lon,city,country")
+            data=res.json()
+            print("info data", data)
             data.update({
-                "country": res.get("country_name"),
-                "city": res.get("city"),
-                "org": res.get("org"),
-                "region": res.get("region"),
-                "latitude": res.get("latitude"),
-                "longitude": res.get("longitude"),
+                "country": data["country"],
+                "city": data["city"],
+                "latitude": str(data["lat"]),
+                "longitude": str(data["lon"]),
             })
         except Exception:
             pass
@@ -52,6 +51,7 @@ class VisitorService:
             visitor_create.ip_address,
             visitor_create.user_agent
         )
+        
 
         existing_visitor = session.exec(
             select(Visitor).where(

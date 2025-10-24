@@ -13,7 +13,5 @@ class Visitor(SQLModel, table=True):
     device_type: Optional[str] = Field(default=None)
     country: Optional[str] = Field(default=None)
     city: Optional[str] = Field(default=None)
-    org: Optional[str] = Field(default=None)        
-    region: Optional[str] = Field(default=None)
     latitude: Optional[float] = Field(default=None)
     longitude: Optional[float] = Field(default=None)

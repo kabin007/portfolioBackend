@@ -22,6 +22,7 @@ def track_visitor(request: Request, session: Session = Depends(get_db)):
     forwarded = request.headers.get("X-Forwarded-For")
     if forwarded:
         ip_address = forwarded.split(",")[0].strip()
+        print("Ip address found in x forwarded for:", ip_address)
 
     else:
         ip_address = request.client.host
@@ -30,5 +31,7 @@ def track_visitor(request: Request, session: Session = Depends(get_db)):
         ip_address=ip_address,
         user_agent=request.headers.get("user-agent", "")
     )
+
     visitor = VisitorService.create_or_update_visitor(session, visitor_create)
+    print(visitor)
     return visitor
