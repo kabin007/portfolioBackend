@@ -28,16 +28,17 @@ class VisitorService:
 
         try:
             res = requests.get(f"https://ipwho.is/{ip}")
-            data=res.json()
-            print("info data", data)
-            data.update({
-                "country": data["country"],
-                "city": data["city"],
-                "latitude": str(data["latitude"]),
-                "longitude": str(data["longitude"]),
-            })
-        except Exception:
-            pass
+            geo = res.json()
+
+            if geo.get("country"):
+                data.update({
+                    "country": geo.get("country"),
+                    "city": geo.get("city"),
+                    "latitude": str(geo.get("latitude")),
+                    "longitude": str(geo.get("longitude")),
+                })
+        except Exception as e:
+            print("Error fetching IP info:", e)
 
         return data
 
