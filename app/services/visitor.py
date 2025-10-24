@@ -27,14 +27,14 @@ class VisitorService:
         }
 
         try:
-            res = requests.get(f"http://ip-api.com/json/{ip}?fields=status,message,lat,lon,city,country")
+            res = requests.get(f"https://ipwho.is/{ip}")
             data=res.json()
             print("info data", data)
             data.update({
                 "country": data["country"],
                 "city": data["city"],
-                "latitude": str(data["lat"]),
-                "longitude": str(data["lon"]),
+                "latitude": str(data["latitude"]),
+                "longitude": str(data["longitude"]),
             })
         except Exception:
             pass
