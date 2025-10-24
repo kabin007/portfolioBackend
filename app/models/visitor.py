@@ -15,3 +15,4 @@ class Visitor(SQLModel, table=True):
     city: Optional[str] = Field(default=None)
     latitude: Optional[float] = Field(default=None)
     longitude: Optional[float] = Field(default=None)
+    no_of_visits: int = Field(default=1)

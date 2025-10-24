@@ -11,10 +11,9 @@ class VisitorBase(BaseModel):
     device_type: Optional[str] = None
     country: Optional[str] = None
     city: Optional[str] = None
-    region: Optional[str] = None
-    org: Optional[str] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
+    no_of_visits: Optional[int] = None
     visited_at: Optional[datetime] = None
 
     model_config = {

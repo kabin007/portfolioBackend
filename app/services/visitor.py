@@ -63,6 +63,7 @@ class VisitorService:
 
         if existing_visitor:
             existing_visitor.visited_at = visitor_data["visited_at"]
+            existing_visitor.no_of_visits += 1
             session.add(existing_visitor)
             session.commit()
             session.refresh(existing_visitor)
